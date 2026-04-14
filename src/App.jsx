@@ -18,6 +18,7 @@ import InterviewSections from './components/InterviewSections';
 import ResumeHome from './pages/ResumeHome';
 import Feedback from './pages/Feedback';
 import Analytics from './pages/Analytics';
+import QuickInterview from './pages/QuickInterview';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -141,6 +142,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <Feedback />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quick-interview/:sectionId"
+            element={
+              <ProtectedRoute>
+                <QuickInterview />
               </ProtectedRoute>
             }
           />

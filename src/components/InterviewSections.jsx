@@ -195,7 +195,7 @@ const InterviewSections = () => {
   };
 
   const handleQuickStart = (sectionId) => {
-    navigate(`/interview/${sectionId}`);
+    navigate(`/quick-interview/${sectionId}`);
   };
 
   const handleAddSection = () => {

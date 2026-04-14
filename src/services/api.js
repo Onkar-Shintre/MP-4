@@ -40,14 +40,14 @@ export const authAPI = {
   login: (credentials) => api.post('/api/auth/login', credentials),
   register: (userData) => {
     console.log('🔍 Sending registration request:', userData);
-    
+
     // Prepare the request data
     const requestData = {
       name: userData.name,
       email: userData.email,
       password: userData.password
     };
-    
+
     // If there's a profile picture, use FormData
     if (userData.avatar && userData.avatar instanceof File) {
       const formData = new FormData();
@@ -55,7 +55,7 @@ export const authAPI = {
       formData.append('email', userData.email);
       formData.append('password', userData.password);
       formData.append('profileImage', userData.avatar);
-      
+
       return api.post('/api/auth/signup', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -138,4 +138,14 @@ export const feedbackAPI = {
   getFeedbackStats: () => api.get('/api/feedback/admin/stats'),
 };
 
-export default api; 
+// AI Question Generator API (local backend on port 5000)
+const generateApi = axios.create({
+  baseURL: 'http://localhost:5000',
+  headers: { 'Content-Type': 'application/json' },
+});
+
+export const questionGeneratorAPI = {
+  generate: (domain) => generateApi.post('/api/generate', { domain }),
+};
+
+export default api;

@@ -20,7 +20,7 @@ const Register = () => {
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
 
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const experienceOptions = [
@@ -105,9 +105,16 @@ const Register = () => {
     }
   };
 
-  const handleGoogleSignup = () => {
-    // Google signup functionality will be implemented here
-    console.log('Google signup clicked');
+  const handleGoogleSignup = async () => {
+    setLoading(true);
+    try {
+      const result = await loginWithGoogle();
+      if (result.success) {
+        navigate('/dashboard');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

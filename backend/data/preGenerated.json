@@ -1,0 +1,91 @@
+{
+    "domain": "General",
+    "questions": {
+        "beginner": [
+            {
+                "id": 1,
+                "level": "beginner",
+                "type": "conceptual",
+                "question": "What is the difference between a compiled language and an interpreted language?",
+                "answer": "A compiled language (like C, C++) translates the entire source code into machine code before execution using a compiler. An interpreted language (like Python, JavaScript) translates and executes code line-by-line at runtime using an interpreter. Compiled programs generally run faster since translation happens upfront, while interpreted languages offer more flexibility and easier debugging. Modern languages often use a hybrid approach — for example, Java compiles to bytecode which is then interpreted by the JVM.",
+                "hint": "Think about when code is translated to machine instructions — before or during execution."
+            },
+            {
+                "id": 2,
+                "level": "beginner",
+                "type": "conceptual",
+                "question": "What is version control and why is it important in software development?",
+                "answer": "Version control is a system that tracks changes to files over time, allowing developers to recall specific versions later. Git is the most popular version control system. It is important because it enables collaboration among multiple developers without overwriting each other's work, provides a history of all changes, allows rollback to previous states when bugs are introduced, and supports branching for parallel feature development. Without version control, managing code in a team environment would be chaotic and error-prone.",
+                "hint": "Consider collaboration, history tracking, and the ability to undo mistakes."
+            },
+            {
+                "id": 3,
+                "level": "beginner",
+                "type": "coding",
+                "question": "Write a function that reverses a string without using built-in reverse methods.",
+                "answer": "You can reverse a string by iterating from the last character to the first and building a new string. Example in JavaScript: function reverseString(str) { let result = ''; for (let i = str.length - 1; i >= 0; i--) { result += str[i]; } return result; }. Alternatively, you can split the string into an array of characters, use a two-pointer approach swapping characters from both ends until they meet in the middle, then join back. The time complexity is O(n) and space complexity is O(n) for the result string.",
+                "hint": "Use a loop starting from the last index, or a two-pointer technique."
+            }
+        ],
+        "intermediate": [
+            {
+                "id": 4,
+                "level": "intermediate",
+                "type": "conceptual",
+                "question": "Explain the concept of RESTful APIs and the principles behind REST architecture.",
+                "answer": "REST (Representational State Transfer) is an architectural style for designing networked applications. Key principles include: Statelessness — each request contains all information needed to process it; Client-Server separation — the UI and data storage are decoupled; Uniform Interface — resources are identified by URIs and manipulated using standard HTTP methods (GET, POST, PUT, DELETE); Layered System — clients don't need to know if they're talking directly to the server; and Cacheability — responses should define themselves as cacheable or non-cacheable. RESTful APIs are widely used because they are simple, scalable, and work well with HTTP.",
+                "hint": "Think about statelessness, resources identified by URLs, and standard HTTP methods."
+            },
+            {
+                "id": 5,
+                "level": "intermediate",
+                "type": "conceptual",
+                "question": "What is the difference between SQL and NoSQL databases? When would you choose one over the other?",
+                "answer": "SQL databases (like MySQL, PostgreSQL) are relational, use structured schemas, and support ACID transactions — ideal for complex queries and data integrity. NoSQL databases (like MongoDB, Redis, Cassandra) are non-relational, schema-flexible, and designed for horizontal scaling — ideal for unstructured or rapidly changing data. Choose SQL when your data has clear relationships, you need complex joins, or data consistency is critical (e.g., banking). Choose NoSQL when you need high scalability, flexible schemas, or are storing large volumes of unstructured data (e.g., social media feeds, real-time analytics).",
+                "hint": "Consider data structure, scalability needs, and consistency requirements."
+            },
+            {
+                "id": 6,
+                "level": "intermediate",
+                "type": "conceptual",
+                "question": "Describe the MVC (Model-View-Controller) design pattern and its benefits.",
+                "answer": "MVC is a software design pattern that separates an application into three components: Model (manages data and business logic), View (handles the UI and presentation), and Controller (processes user input and coordinates between Model and View). Benefits include separation of concerns making code easier to maintain and test, parallel development where designers work on Views while developers work on Models, reusability of components, and easier debugging since each layer has a distinct responsibility. Frameworks like Express.js, Django, and Ruby on Rails are built around MVC principles.",
+                "hint": "Think about separation of concerns and how each layer has a single responsibility."
+            },
+            {
+                "id": 7,
+                "level": "intermediate",
+                "type": "coding",
+                "question": "Implement a function that finds all duplicate elements in an array and returns them.",
+                "answer": "Use a hash map to track element frequencies in a single pass. Example in JavaScript: function findDuplicates(arr) { const count = {}; const duplicates = []; for (const item of arr) { count[item] = (count[item] || 0) + 1; } for (const [key, val] of Object.entries(count)) { if (val > 1) duplicates.push(key); } return duplicates; }. This runs in O(n) time and O(n) space. An alternative using a Set tracks seen and duplicate sets separately, also O(n). Avoid nested loops which would be O(n²).",
+                "hint": "Use a hash map to count occurrences — O(n) time complexity."
+            }
+        ],
+        "advanced": [
+            {
+                "id": 8,
+                "level": "advanced",
+                "type": "conceptual",
+                "question": "Explain the CAP theorem and how it applies to distributed systems.",
+                "answer": "The CAP theorem states that a distributed system can only guarantee two of three properties simultaneously: Consistency (every read receives the most recent write), Availability (every request receives a response, though it may not be the latest), and Partition Tolerance (the system continues operating despite network partitions). Since network partitions are inevitable in distributed systems, you must choose between CP (consistent but may be unavailable during partitions — e.g., HBase, Zookeeper) or AP (available but may return stale data — e.g., Cassandra, CouchDB). Understanding CAP helps architects make informed trade-offs when designing distributed databases and services.",
+                "hint": "You can only guarantee two of the three — and partition tolerance is usually non-negotiable."
+            },
+            {
+                "id": 9,
+                "level": "advanced",
+                "type": "conceptual",
+                "question": "What are microservices? What are the trade-offs compared to a monolithic architecture?",
+                "answer": "Microservices is an architectural style where an application is built as a collection of small, independently deployable services, each responsible for a specific business capability and communicating via APIs. Advantages over monoliths include independent scaling, technology flexibility per service, fault isolation, and faster deployment cycles. However, trade-offs include increased operational complexity (service discovery, distributed tracing, orchestration), network latency between services, data consistency challenges across services, and higher infrastructure costs. Microservices are best suited for large teams and complex domains; monoliths are often better for small teams or early-stage products.",
+                "hint": "Consider deployment complexity, scalability, team autonomy, and operational overhead."
+            },
+            {
+                "id": 10,
+                "level": "advanced",
+                "type": "conceptual",
+                "question": "Describe strategies for optimizing database query performance at scale.",
+                "answer": "Key strategies include: Indexing — create indexes on frequently queried columns to avoid full table scans; Query optimization — analyze execution plans with EXPLAIN, avoid SELECT *, and use proper JOINs; Caching — use Redis or Memcached to cache frequent query results; Connection pooling — reuse database connections to reduce overhead; Read replicas — distribute read traffic across multiple replicas; Sharding — horizontally partition data across multiple databases; Denormalization — trade some data redundancy for faster reads; and Pagination — use cursor-based pagination instead of OFFSET for large datasets. Profiling slow queries with tools like pg_stat_statements or slow query logs is the first step.",
+                "hint": "Think about indexing, query planning, caching layers, and horizontal scaling."
+            }
+        ]
+    }
+}

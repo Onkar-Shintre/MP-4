@@ -1,4 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import {
+  auth,
+  googleProvider,
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  updateProfile,
+} from '../firebase';
 import { authAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -15,81 +25,43 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [token, setToken] = useState(null);
 
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    toast.success('Logged out successfully');
-  };
-
+  // Listen to Firebase auth state changes
   useEffect(() => {
-    const initializeAuth = async () => {
-      const storedToken = localStorage.getItem('token');
-      const storedUser = localStorage.getItem('user');
-
-      if (storedToken && storedUser) {
-        try {
-          // Set the stored user data immediately for better UX
-          const parsedUser = JSON.parse(storedUser);
-          
-          // Validate that parsedUser has required fields
-          if (parsedUser && (parsedUser.name || parsedUser.email)) {
-            setToken(storedToken);
-            setUser(parsedUser);
-            
-            // Verify token by fetching user profile in the background
-            try {
-              const response = await authAPI.getProfile();
-              const freshUserData = response.data;
-              
-              // Update with fresh data from server
-              if (freshUserData && (freshUserData.name || freshUserData.email)) {
-                setUser(freshUserData);
-                localStorage.setItem('user', JSON.stringify(freshUserData));
-              }
-            } catch (profileError) {
-              console.error('Profile fetch failed:', profileError);
-              // Keep using stored user data if profile fetch fails
-              // Only logout if it's an authentication error
-              if (profileError.response?.status === 401 || profileError.response?.status === 403) {
-                logout();
-              }
-            }
-          } else {
-            // Invalid user data, clear everything
-            console.error('Invalid user data in localStorage');
-            logout();
-          }
-        } catch (parseError) {
-          console.error('Failed to parse stored user data:', parseError);
-          // Clear invalid data
-          logout();
-        }
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const idToken = await firebaseUser.getIdToken();
+        const userData = {
+          uid: firebaseUser.uid,
+          name: firebaseUser.displayName,
+          email: firebaseUser.email,
+          avatar: firebaseUser.photoURL,
+        };
+        setToken(idToken);
+        setUser(userData);
+        localStorage.setItem('token', idToken);
+        localStorage.setItem('user', JSON.stringify(userData));
+      } else {
+        setToken(null);
+        setUser(null);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
       }
       setLoading(false);
-    };
+    });
 
-    initializeAuth();
+    return () => unsubscribe();
   }, []);
 
   const login = async (credentials) => {
     try {
-      const response = await authAPI.login(credentials);
-      const { token: newToken, user: userData } = response.data;
-      
-      setToken(newToken);
-      setUser(userData);
-      
-      localStorage.setItem('token', newToken);
-      localStorage.setItem('user', JSON.stringify(userData));
-      
+      const { email, password } = credentials;
+      await signInWithEmailAndPassword(auth, email, password);
       toast.success('Login successful!');
       return { success: true };
     } catch (error) {
-      const message = error.response?.data?.message || 'Login failed';
+      const message = getFirebaseErrorMessage(error.code);
       toast.error(message);
       return { success: false, error: message };
     }
@@ -97,50 +69,58 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      const response = await authAPI.register(userData);
-      const { token: newToken, user: newUser } = response.data;
-      
-      setToken(newToken);
-      setUser(newUser);
-      
-      localStorage.setItem('token', newToken);
-      localStorage.setItem('user', JSON.stringify(newUser));
-      
+      const { email, password, name } = userData;
+      const credential = await createUserWithEmailAndPassword(auth, email, password);
+
+      // Set display name on Firebase user
+      await updateProfile(credential.user, { displayName: name });
+
       toast.success('Registration successful!');
       return { success: true };
     } catch (error) {
-      const message = error.response?.data?.message || 'Registration failed';
+      const message = getFirebaseErrorMessage(error.code);
       toast.error(message);
       return { success: false, error: message };
     }
   };
 
-  const updateProfile = async (profileData) => {
+  const loginWithGoogle = async () => {
     try {
-      const response = await authAPI.updateProfile(profileData);
-      const updatedUser = response.data.user;
-      
-      setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      
+      await signInWithPopup(auth, googleProvider);
+      toast.success('Signed in with Google!');
+      return { success: true };
+    } catch (error) {
+      const message = getFirebaseErrorMessage(error.code);
+      toast.error(message);
+      return { success: false, error: message };
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      toast.success('Logged out successfully');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  const updateUserProfile = async (profileData) => {
+    try {
+      if (auth.currentUser) {
+        await updateProfile(auth.currentUser, {
+          displayName: profileData.name,
+          photoURL: profileData.avatar,
+        });
+        const updatedUser = { ...user, ...profileData };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      }
       toast.success('Profile updated successfully!');
       return { success: true };
     } catch (error) {
-      const message = error.response?.data?.message || 'Profile update failed';
-      toast.error(message);
-      return { success: false, error: message };
-    }
-  };
-
-  const changePassword = async (passwordData) => {
-    try {
-      await authAPI.changePassword(passwordData);
-      toast.success('Password changed successfully!');
-      return { success: true };
-    } catch (error) {
-      const message = error.response?.data?.message || 'Password change failed';
-      toast.error(message);
-      return { success: false, error: message };
+      toast.error('Profile update failed');
+      return { success: false, error: error.message };
     }
   };
 
@@ -155,9 +135,9 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     register,
+    loginWithGoogle,
     logout,
-    updateProfile,
-    changePassword,
+    updateProfile: updateUserProfile,
     updateUser,
     isAuthenticated: !!token && !!user,
   };
@@ -167,4 +147,20 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-}; 
+};
+
+// Map Firebase error codes to friendly messages
+function getFirebaseErrorMessage(code) {
+  const messages = {
+    'auth/user-not-found': 'No account found with this email',
+    'auth/wrong-password': 'Incorrect password',
+    'auth/email-already-in-use': 'An account with this email already exists',
+    'auth/weak-password': 'Password must be at least 6 characters',
+    'auth/invalid-email': 'Invalid email address',
+    'auth/popup-closed-by-user': 'Google sign-in was cancelled',
+    'auth/network-request-failed': 'Network error. Please check your connection',
+    'auth/too-many-requests': 'Too many attempts. Please try again later',
+    'auth/invalid-credential': 'Invalid email or password',
+  };
+  return messages[code] || 'Authentication failed. Please try again';
+}

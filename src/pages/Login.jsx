@@ -13,7 +13,7 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -74,9 +74,17 @@ const Login = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    // Google login functionality will be implemented here
-    console.log('Google login clicked');
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    try {
+      const result = await loginWithGoogle();
+      if (result.success) {
+        setIsTransitioning(true);
+        setTimeout(() => navigate('/dashboard'), 800);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
